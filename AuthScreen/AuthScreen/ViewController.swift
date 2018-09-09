@@ -25,6 +25,8 @@ class ViewController: UIViewController {
     let passSep = UIView()
     let loginButton = UIButton()
     let createAccButton = UIButton()
+    var mark1 = false
+    var mark2 = false
     
 
     override func viewDidLoad() {
@@ -55,7 +57,16 @@ class ViewController: UIViewController {
                 let regex = try? NSRegularExpression.init(pattern: "^((([0-9A-Za-z]{1}[-0-9A-z\\.]{1,}[0-9A-Za-z]{1})|([0-9А-Яа-я]{1}[-0-9А-я\\.]{1,}[0-9А-Яа-я]{1}))@([-A-Za-z]{1,}\\.){1,2}[-A-Za-z]{2,})$")
                 if self.matches(for: regex!, in: $0)
                 {
+                    self.mark1 = true
                     print("Email correct")
+                    if self.mark2 {
+                        self.loginButton.isEnabled = true
+                    }
+                }
+                else
+                {
+                    self.mark1 = false
+                    self.loginButton.isEnabled = false
                 }
             })
         
@@ -68,7 +79,16 @@ class ViewController: UIViewController {
                 let regex = try? NSRegularExpression.init(pattern: "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{6,}")
                 if self.matches(for: regex!, in: $0)
                 {
+                    self.mark2 = true
                     print("Password correct")
+                    if self.mark1 {
+                        self.loginButton.isEnabled = true
+                    }
+                }
+                else
+                {
+                    self.mark2 = false
+                    self.loginButton.isEnabled = false
                 }
             })
 
@@ -87,12 +107,13 @@ class ViewController: UIViewController {
     }
     
     override func viewDidLayoutSubviews() {
-         scrollView.contentSize = CGSize(width: view.frame.width, height: view.frame.height - 65)
+        scrollView.contentSize = CGSize(width: view.frame.width, height: view.frame.height - 65 - scrollView.contentInset.bottom)
     }
     
     private func configure(scrollView: UIScrollView) {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
+        
         scrollView.topAnchor.constraint(equalTo: view.topAnchor, constant: 65).isActive = true
         scrollView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         scrollView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
@@ -222,6 +243,7 @@ class ViewController: UIViewController {
         loginButton.translatesAutoresizingMaskIntoConstraints = false
         loginButton.backgroundColor = UIColor(red: 1, green: 155/255, blue: 0, alpha: 1.0)
         loginButton.setTitle("Войти", for: .normal)
+        loginButton.isEnabled = false
         loginButton.layer.cornerRadius = 23
         loginButton.addTarget(self, action: #selector(self.loginAction(sender:)), for: .touchUpInside)
         scrollView.addSubview(loginButton)
@@ -249,12 +271,12 @@ class ViewController: UIViewController {
         guard let keyboardFrameValue = notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue else { return }
         let keyboardFrame = view.convert(keyboardFrameValue.cgRectValue, from: nil)
         scrollView.contentInset.bottom = keyboardFrame.size.height + (view.frame.height / 2) - 128
-        scrollView.scrollIndicatorInsets = scrollView.contentInset
+        view.setNeedsLayout()
+        
     }
     
     @objc func keyboardWillHide(notification: NSNotification) {
         scrollView.contentInset = .zero
-        scrollView.scrollIndicatorInsets = scrollView.contentInset
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -265,6 +287,7 @@ class ViewController: UIViewController {
     func endEditing(sender: UITextField) {
         if sender.tag == 0 {
             passTextField.becomeFirstResponder()
+            scrollView.contentSize = CGSize(width: view.frame.width, height: view.frame.height - 65 - scrollView.contentInset.bottom)
         }
     }
     
