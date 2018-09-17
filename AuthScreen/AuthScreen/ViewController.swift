@@ -59,14 +59,10 @@ class ViewController: UIViewController {
                 {
                     self.mark1 = true
                     print("Email correct")
-                    if self.mark2 {
-                        self.loginButton.isEnabled = true
-                    }
                 }
                 else
                 {
                     self.mark1 = false
-                    self.loginButton.isEnabled = false
                 }
             })
         
@@ -81,14 +77,10 @@ class ViewController: UIViewController {
                 {
                     self.mark2 = true
                     print("Password correct")
-                    if self.mark1 {
-                        self.loginButton.isEnabled = true
-                    }
                 }
                 else
                 {
                     self.mark2 = false
-                    self.loginButton.isEnabled = false
                 }
             })
 
@@ -243,7 +235,6 @@ class ViewController: UIViewController {
         loginButton.translatesAutoresizingMaskIntoConstraints = false
         loginButton.backgroundColor = UIColor(red: 1, green: 155/255, blue: 0, alpha: 1.0)
         loginButton.setTitle("Войти", for: .normal)
-        loginButton.isEnabled = false
         loginButton.layer.cornerRadius = 23
         loginButton.addTarget(self, action: #selector(self.loginAction(sender:)), for: .touchUpInside)
         scrollView.addSubview(loginButton)
@@ -293,17 +284,25 @@ class ViewController: UIViewController {
     
     @objc
     func loginAction(sender : UIButton) {
-        let provider = MoyaProvider<MoyaExampleService>()
-        provider.request(.getWeather()) { result in
-            switch result {
-            case .success(let response):
-                if let parseResponse = try? JSONDecoder().decode(ResponseModel.self, from: response.data) {
-                    let alert = UIAlertController(title: "Weather Saransk", message: parseResponse.list[0].dt_txt + " " + (String)(parseResponse.list[0].main.temp) + "C", preferredStyle: UIAlertControllerStyle.alert)
-                    alert.addAction(UIAlertAction(title: "Click", style: UIAlertActionStyle.default, handler: nil))
-                    self.present(alert, animated: true, completion: nil)
-                }
-            case .failure(let error):
+        if (!mark1 || !mark2) {
+            let alert = UIAlertController(title: "Error", message: "Логин/пароль введены некорректно", preferredStyle: UIAlertControllerStyle.alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+        }
+        else
+        {
+            let provider = MoyaProvider<MoyaExampleService>()
+            provider.request(.getWeather()) { result in
+                switch result {
+                case .success(let response):
+                    if let parseResponse = try? JSONDecoder().decode(ResponseModel.self, from: response.data) {
+                        let alert = UIAlertController(title: "Weather Saransk", message: parseResponse.list[0].dt_txt + " " + (String)(parseResponse.list[0].main.temp) + "C", preferredStyle: UIAlertControllerStyle.alert)
+                        alert.addAction(UIAlertAction(title: "Click", style: UIAlertActionStyle.default, handler: nil))
+                        self.present(alert, animated: true, completion: nil)
+                    }
+                case .failure(let error):
                 print(error.errorDescription ?? "Unknown error")
+                }
             }
         }
     }
